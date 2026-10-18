@@ -24,12 +24,14 @@ public class HelpScreen extends Screen {
     private static final int PANEL_W = 350;
     private static final int HEADER_H = 24;
     // Pied de page : rangée dismiss/close, puis rangée dédiée au don (mise en avant, tout en bas).
-    private static final int FOOTER_H = 66;
+    private static final int FOOTER_H = 36; // SnkMC : pas de rangée de don
     private static final int TITLE_H = 11;
     private static final int LINE_H = 9;
     private static final int FEATURE_GAP = 5;
     private static final int BTN_H = 20;
     private static final int DONATE_ROW_GAP = 6;
+    // SnkMC : économie et destinataire inconnus, don désactivé.
+    private static final boolean DONATE_ENABLED = false;
 
     private static final int GOLD = 0xFFFFD27F;
     private static final int GRAY = 0xFFCBC8C7;
@@ -63,37 +65,14 @@ public class HelpScreen extends Screen {
         return Component.translatable(key).getString();
     }
 
+    // SnkMC : seules les features actives (parchemins, métier) sont décrites.
     private static Feature[] buildFeatures() {
         return new Feature[]{
-            new Feature(tr("snkmc.ui.help.boss.title"), new Line[]{
-                info(tr("snkmc.ui.help.boss.line1")),
-                important(tr("snkmc.ui.help.boss.line2")),
-                important(tr("snkmc.ui.help.boss.line3")),
-            }),
             new Feature(tr("snkmc.ui.help.scrolls.title"), new Line[]{
                 info(tr("snkmc.ui.help.scrolls.line1")),
             }),
-            new Feature(tr("snkmc.ui.help.pet_quality.title"), new Line[]{
-                info(tr("snkmc.ui.help.pet_quality.line1")),
-                important(tr("snkmc.ui.help.pet_quality.line2")),
-            }),
-            new Feature(tr("snkmc.ui.help.minion_calc.title"), new Line[]{
-                info(tr("snkmc.ui.help.minion_calc.line1")),
-                important(tr("snkmc.ui.help.minion_calc.line2")),
-                important(tr("snkmc.ui.help.minion_calc.line3")),
-            }),
-            new Feature(tr("snkmc.ui.help.active_pets.title"), new Line[]{
-                info(tr("snkmc.ui.help.active_pets.line1")),
-                important(tr("snkmc.ui.help.active_pets.line2")),
-            }),
             new Feature(tr("snkmc.ui.help.job.title"), new Line[]{
                 info(tr("snkmc.ui.help.job.line1")),
-            }),
-            new Feature(tr("snkmc.ui.help.daily_quests.title"), new Line[]{
-                info(tr("snkmc.ui.help.daily_quests.line1")),
-                important(tr("snkmc.ui.help.daily_quests.line2")),
-                info(tr("snkmc.ui.help.daily_quests.line3")),
-                info(tr("snkmc.ui.help.daily_quests.line4")),
             }),
             new Feature(tr("snkmc.ui.help.hud_editor.title"), new Line[]{
                 important(tr("snkmc.ui.help.hud_editor.line1")),
@@ -107,7 +86,7 @@ public class HelpScreen extends Screen {
     }
 
     // Line counts per feature (fixed, not language-dependent) used for layout.
-    private static final int[] FEATURE_LINE_COUNTS = {3, 1, 2, 3, 2, 1, 4, 3, 1};
+    private static final int[] FEATURE_LINE_COUNTS = {1, 1, 3, 1};
 
     private static final int PANEL_H;
 
@@ -153,7 +132,7 @@ public class HelpScreen extends Screen {
         drawButton(ctx, left + PANEL_W - 12 - 90, btnY, 90, tr("snkmc.ui.help.btn_close"), mouseX, mouseY);
 
         // Bouton de don : rangée dédiée tout en bas du panneau, traitement doré pour se distinguer.
-        if (ServerDetector.isOnSnkmc()) {
+        if (DONATE_ENABLED && ServerDetector.isOnSnkmc()) {
             drawDonateButton(ctx, left + 12, donateRowY(), PANEL_W - 24, tr("snkmc.ui.donate.btn_donate"), mouseX, mouseY);
         }
     }
@@ -211,7 +190,7 @@ public class HelpScreen extends Screen {
                 return true;
             }
             // Le don reste gate sur MinePiece à la fois pour l'affichage (render) et le clic.
-            if (ServerDetector.isOnSnkmc() && inside(click, left + 12, donateRowY(), PANEL_W - 24)) {
+            if (DONATE_ENABLED && ServerDetector.isOnSnkmc() && inside(click, left + 12, donateRowY(), PANEL_W - 24)) {
                 Minecraft.getInstance().setScreenAndShow(new DonateScreen(this));
                 return true;
             }

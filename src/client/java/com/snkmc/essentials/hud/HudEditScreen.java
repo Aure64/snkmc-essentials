@@ -38,6 +38,8 @@ public class HudEditScreen extends Screen {
 
     // Bouton de don, tout en bas de l'onglet Placement (visible seulement sur MinePiece).
     private int donateBtnX, donateBtnY;
+    // SnkMC : don désactivé (voir HelpScreen).
+    private static final boolean DONATE_ENABLED = false;
 
     // Palette "parchemin doré" du bouton de don, pour qu'il se distingue des toggles gris.
     private static final int DONATE_FILL = 0xFF8A6A44;
@@ -195,7 +197,7 @@ public class HudEditScreen extends Screen {
 
         // Bouton de don, seulement visible tant qu'on est connecté à MinePiece.
         // Traitement doré volontairement différent des toggles gris pour attirer l'œil.
-        if (ServerDetector.isOnSnkmc()) {
+        if (DONATE_ENABLED && ServerDetector.isOnSnkmc()) {
             drawDonateButton(ctx, mouseX, mouseY);
         }
     }
@@ -323,7 +325,7 @@ public class HudEditScreen extends Screen {
             }
         }
 
-        if (button == 0 && ServerDetector.isOnSnkmc()
+        if (DONATE_ENABLED && button == 0 && ServerDetector.isOnSnkmc()
                 && inBox(mouseX, mouseY, donateBtnX, donateBtnY, BTN_W, BTN_H)) {
             Minecraft.getInstance().setScreenAndShow(new DonateScreen(this));
             return true;
