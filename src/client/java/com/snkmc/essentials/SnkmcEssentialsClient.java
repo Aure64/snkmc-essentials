@@ -70,6 +70,8 @@ public class SnkmcEssentialsClient implements ClientModInitializer {
         HudElementRegistry.register(new ParcheminHud());
         // Armes : même NBT d'XP (items:experience-xp) que les armes MinePiece.
         HudElementRegistry.register(new AscensionHud());
+        // Métier : écran /jobs identique à MinePiece, action bar à confirmer (XP décimale).
+        HudElementRegistry.register(new JobHud());
 
         // Format AH confirmé identique sur SnkMC (dump du 2026-10-18) :
         // lore « Prix de vente / Prix moyen ». Périmètre voulu : parchemins + AH.
