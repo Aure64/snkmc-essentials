@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 — 2026-10-18
+
+- New icon.
+
 ## 0.1.0 — 2026-10-18
 
 First release, for Minecraft 26.1.2. Derived from MinePiece Essentials 1.9.0.
