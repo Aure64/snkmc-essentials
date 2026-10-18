@@ -1,0 +1,35 @@
+{
+    "schemaVersion": 1,
+    "id": "snkmc-essentials",
+    "version": "${version}",
+    "name": "SnkMC Essentials",
+    "description": "QoL pour le serveur SnkMC : parchemins, métiers et plus. En cours de construction. Affichage uniquement, aucune automatisation.",
+    "authors": [
+        "Aure64"
+    ],
+    "contact": {
+        "homepage": "https://modrinth.com/mod/snkmc-essentials",
+        "sources": "https://github.com/Aure64/snkmc-essentials",
+        "issues": "https://github.com/Aure64/snkmc-essentials/issues"
+    },
+    "license": "All-Rights-Reserved",
+    "icon": "assets/snkmc-essentials/icon.png",
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "com.snkmc.essentials.SnkmcEssentialsClient"
+        ]
+    },
+    "mixins": [
+        "snkmc-essentials.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.19.5",
+        "minecraft": "~26.1",
+        "java": ">=25",
+        "fabric-api": ">=0.155.0"
+    },
+    "suggests": {
+        "xaerominimap": "*"
+    }
+}

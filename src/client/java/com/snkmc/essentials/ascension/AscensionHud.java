@@ -1,0 +1,150 @@
+package com.snkmc.essentials.ascension;
+
+import com.snkmc.essentials.SnkmcEssentialsClient;
+import com.snkmc.essentials.hud.HudElement;
+import com.snkmc.essentials.hud.ParchmentRenderer;
+import com.snkmc.essentials.util.RenderUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import com.snkmc.essentials.util.StackFingerprint;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+
+/**
+ * HUD listing the player's ascendable fruits and weapons with their level, and
+ * highlighting the ones whose next ascension is available. Reads straight from
+ * the player inventory, so it stays live without opening any screen.
+ */
+public class AscensionHud extends HudElement {
+
+    @Override
+    public boolean isEnabled() {
+        return SnkmcEssentialsClient.getInstance().getConfigManager().config().ascensionHudEnabled;
+    }
+
+    private static final int WIDTH = 188;
+    private static final int SCAN_INTERVAL = 10; // ticks
+    private static final int HEADER_COLOR = 0xFFFFAA00;
+    private static final int NAME_COLOR = 0xFFE9D5C7;
+    private static final int LEVEL_COLOR = 0xFFCBC8C7;
+    private static final int READY_COLOR = 0xFF7CFC55;
+
+    private List<AscensionItem> items = List.of();
+    private int ticks;
+    private long lastFingerprint;
+    private boolean hasFruit;
+    private boolean hasWeapon;
+
+    public AscensionHud() {
+        super("ascensions", 5, 360, WIDTH, 60);
+    }
+
+    @Override
+    public void tick() {
+        if (ticks++ % SCAN_INTERVAL != 0) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        long fp = player == null ? 0 : StackFingerprint.of(player.getInventory());
+        if (fp == lastFingerprint) return; // inventaire inchangé
+        lastFingerprint = fp;
+        items = player == null ? List.of() : scan(player);
+
+        // Precompute the section flags once per scan instead of streaming twice
+        // every render frame.
+        boolean f = false, w = false;
+        for (AscensionItem it : items) {
+            if (it.type() == AscensionItem.Type.FRUIT) f = true;
+            else w = true;
+            if (f && w) break;
+        }
+        hasFruit = f;
+        hasWeapon = w;
+    }
+
+    private static List<AscensionItem> scan(LocalPlayer player) {
+        List<AscensionItem> fruits = new ArrayList<>();
+        List<AscensionItem> weapons = new ArrayList<>();
+        var inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.isEmpty()) continue;
+            CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+            if (data == null) continue;
+            AscensionParser.parse(stack.getHoverName().getString(), data.copyTag().toString())
+                .ifPresent(item -> {
+                    int detected = colorOf(stack.getHoverName());
+                    AscensionItem coloured = detected != 0 ? item.withColor(detected) : item;
+                    (coloured.type() == AscensionItem.Type.FRUIT ? fruits : weapons).add(coloured);
+                });
+        }
+        List<AscensionItem> all = new ArrayList<>(fruits);
+        all.addAll(weapons);
+        return all;
+    }
+
+    @Override
+    public void render(GuiGraphicsExtractor ctx, float tickDelta) {
+        if (!SnkmcEssentialsClient.getInstance().getConfigManager().config().ascensionHudEnabled) {
+            return;
+        }
+        List<AscensionItem> snapshot = items;
+        if (snapshot.isEmpty()) return;
+
+        boolean fruitHeaderDrawn = false;
+        boolean weaponHeaderDrawn = false;
+        int headers = (hasFruit ? 1 : 0) + (hasWeapon ? 1 : 0);
+        int h = 20 + (snapshot.size() + headers) * 10 + 4;
+        this.height = h;
+
+        ParchmentRenderer.renderPanel(ctx, 0, 0, WIDTH, h, Component.translatable("snkmc.ui.ascensions.title").getString(), getBackground());
+
+        int y = 20;
+        for (AscensionItem item : snapshot) {
+            if (item.type() == AscensionItem.Type.FRUIT && !fruitHeaderDrawn) {
+                RenderUtils.drawText(ctx, Component.translatable("snkmc.ui.ascensions.fruits").getString(), 6, y, HEADER_COLOR);
+                fruitHeaderDrawn = true;
+                y += 10;
+            } else if (item.type() == AscensionItem.Type.WEAPON && !weaponHeaderDrawn) {
+                RenderUtils.drawText(ctx, Component.translatable("snkmc.ui.ascensions.weapons").getString(), 6, y, HEADER_COLOR);
+                weaponHeaderDrawn = true;
+                y += 10;
+            }
+
+            String right = item.available()
+                ? "Lv" + item.level() + " ▲"
+                : "Lv" + item.level() + "  " + item.xpToNextLevel() + "xp";
+            int rightX = WIDTH - 6 - RenderUtils.textWidth(right);
+            RenderUtils.drawText(ctx, right, rightX, y, item.available() ? READY_COLOR : LEVEL_COLOR);
+
+            RenderUtils.drawText(ctx, truncate(item.name(), rightX - 8), 8, y, item.color());
+            y += 10;
+        }
+    }
+
+    /** First explicit colour in the item's name Text, as ARGB; 0 if none (use the rarity fallback). */
+    private static int colorOf(Component text) {
+        int[] found = {0};
+        text.visit((style, str) -> {
+            TextColor c = style.getColor();
+            if (c != null && found[0] == 0) found[0] = 0xFF000000 | c.getValue();
+            return Optional.empty();
+        }, Style.EMPTY);
+        return found[0];
+    }
+
+    private static String truncate(String name, int budget) {
+        if (RenderUtils.textWidth(name) <= budget) return name;
+        String s = name;
+        while (s.length() > 1 && RenderUtils.textWidth(s + "..") > budget) {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s + "..";
+    }
+}

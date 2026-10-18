@@ -1,0 +1,15 @@
+{
+    "required": true,
+    "package": "com.snkmc.essentials.mixin",
+    "compatibilityLevel": "JAVA_25",
+    "client": [
+        "BossBarHudMixin",
+        "ClientPlayNetworkHandlerMixin",
+        "HandledScreenAccessor",
+        "InGameHudMixin",
+        "ScreenRenderMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

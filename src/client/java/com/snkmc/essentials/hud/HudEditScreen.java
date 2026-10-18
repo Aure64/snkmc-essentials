@@ -1,0 +1,391 @@
+package com.snkmc.essentials.hud;
+
+import com.snkmc.essentials.SnkmcEssentialsClient;
+import com.snkmc.essentials.ServerDetector;
+import com.snkmc.essentials.boss.BossTimerHud;
+import com.snkmc.essentials.config.HudBackground;
+import com.snkmc.essentials.donate.DonateScreen;
+import com.snkmc.essentials.util.RenderUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FontDescription;
+import net.minecraft.resources.Identifier;
+
+public class HudEditScreen extends Screen {
+    private static final int BTN_W = 180;
+    private static final int BTN_H = 16;
+    private static final int TAB_W = 120;
+    private static final int TAB_H = 16;
+    private static final int TAB_GAP = 4;
+
+    private enum Tab { PLACEMENT, CUSTOMIZE }
+    private Tab tab = Tab.PLACEMENT;
+
+    private HudElement dragging = null;
+    private int dragOffsetX, dragOffsetY;
+
+    private int tabsX, tabsY;
+    private int resetBtnX, resetBtnY;
+    private long resetMsgUntil = 0;
+
+    // Toggles de la fonctionnalité Raretés (onglet Placement).
+    private int rarityTogglesX, rarityTogglesY;
+    private static final int TOGGLE_STEP = BTN_H + 4;
+
+    // Bouton de don, tout en bas de l'onglet Placement (visible seulement sur MinePiece).
+    private int donateBtnX, donateBtnY;
+
+    // Palette "parchemin doré" du bouton de don, pour qu'il se distingue des toggles gris.
+    private static final int DONATE_FILL = 0xFF8A6A44;
+    private static final int DONATE_FILL_HOVER = 0xFFF0A857;
+    private static final int DONATE_BORDER_LIGHT = 0xFFFFE9D5;
+    private static final int DONATE_BORDER_DARK = 0xFF3A2A1C;
+    private static final int DONATE_TEXT = 0xFFFFE9D5;
+    private static final int DONATE_TEXT_HOVER = 0xFF3A2A1C;
+
+    /** Glyphe de la monnaie du serveur (berries), rendu avec la police custom du pack. */
+    private static final String BERRY = "实";
+    private static final Identifier BERRY_FONT = Identifier.fromNamespaceAndPath("fonts", "icons");
+
+    public HudEditScreen() {
+        super(Component.literal("HUD Editor"));
+    }
+
+    @Override
+    protected void init() {
+        com.snkmc.essentials.telemetry.Telemetry.feature("hud_edit");
+        HudElementRegistry.setEditMode(true);
+        tabsY = 26;
+        tabsX = (width - (TAB_W * 2 + TAB_GAP)) / 2;
+        resetBtnX = (width - BTN_W) / 2;
+        resetBtnY = tabsY + TAB_H + 6;
+        rarityTogglesX = (width - BTN_W) / 2;
+        rarityTogglesY = resetBtnY + BTN_H + 28;
+        donateBtnX = (width - BTN_W) / 2;
+        donateBtnY = rarityTogglesY + 7 * TOGGLE_STEP + 12;
+    }
+
+    // --- geometry helpers ----------------------------------------------------
+
+    private int placementTabX() { return tabsX; }
+    private int customizeTabX() { return tabsX + TAB_W + TAB_GAP; }
+
+    private boolean inBox(double mx, double my, int x, int y, int w, int h) {
+        return mx >= x && mx <= x + w && my >= y && my <= y + h;
+    }
+
+    private boolean overResetButton(double mx, double my) {
+        return inBox(mx, my, resetBtnX, resetBtnY, BTN_W, BTN_H);
+    }
+
+    private void resetPlacement() {
+        // Clearing the profile drops every saved position/scale/visibility/style;
+        // each HUD's getLayout() then recreates it at its default. Fixes HUDs that
+        // ended up off-screen on very small or very large resolutions.
+        var cfg = SnkmcEssentialsClient.getInstance().getConfigManager();
+        cfg.layout().activeProfile().elements.clear();
+        cfg.save();
+        resetMsgUntil = System.currentTimeMillis() + 2500;
+    }
+
+    @Override
+    public void removed() {
+        HudElementRegistry.setEditMode(false);
+        for (HudElement element : HudElementRegistry.getElements()) {
+            if (element instanceof BossTimerHud bossHud) {
+                bossHud.setMousePos(-1, -1);
+            }
+        }
+        var mgr = SnkmcEssentialsClient.getInstance().getConfigManager();
+        mgr.save();
+        mgr.flush();
+    }
+
+    // --- rendering -----------------------------------------------------------
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        ctx.fill(0, 0, width, height, 0x44000000);
+
+        String tabName = tab == Tab.PLACEMENT
+                ? Component.translatable("snkmc.ui.editor.tab_placement").getString()
+                : Component.translatable("snkmc.ui.editor.tab_customize").getString();
+        String hint = tab == Tab.PLACEMENT
+                ? tabName + " - Clic gauche: deplacer | Clic droit: ON/OFF | Scroll: taille"
+                : tabName + " - Clic sur un HUD: change son fond (Parchemin -> Sombre -> Transparent)";
+        RenderUtils.drawCenteredText(ctx, hint, width / 2, 5, 0xFFFFFFFF);
+        RenderUtils.drawCenteredText(ctx, "Echap pour sauvegarder et quitter", width / 2, 16, 0xFFAAAAAA);
+
+        drawTabs(ctx, mouseX, mouseY);
+
+        if (tab == Tab.PLACEMENT) {
+            renderPlacement(ctx, mouseX, mouseY, delta);
+        } else {
+            renderCustomize(ctx, mouseX, mouseY, delta);
+        }
+    }
+
+    private void drawTabs(GuiGraphicsExtractor ctx, int mouseX, int mouseY) {
+        drawTab(ctx, placementTabX(), Component.translatable("snkmc.ui.editor.tab_placement").getString(), tab == Tab.PLACEMENT,
+                inBox(mouseX, mouseY, placementTabX(), tabsY, TAB_W, TAB_H));
+        drawTab(ctx, customizeTabX(), Component.translatable("snkmc.ui.editor.tab_customize").getString(), tab == Tab.CUSTOMIZE,
+                inBox(mouseX, mouseY, customizeTabX(), tabsY, TAB_W, TAB_H));
+    }
+
+    private void drawTab(GuiGraphicsExtractor ctx, int x, String label, boolean active, boolean hover) {
+        int bg = active ? 0xFF6A4A2C : (hover ? 0xFF4A3422 : 0xFF2A1E14);
+        ctx.fill(x, tabsY, x + TAB_W, tabsY + TAB_H, bg);
+        ctx.fill(x, tabsY, x + TAB_W, tabsY + 1, 0xFF8A6A44);
+        RenderUtils.drawCenteredText(ctx, label, x + TAB_W / 2, tabsY + 4,
+                active ? 0xFFFFE9D5 : 0xFFBFae9C);
+    }
+
+    private void renderPlacement(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        for (HudElement element : HudElementRegistry.getElements()) {
+            if (element instanceof BossTimerHud bossHud) {
+                bossHud.setMousePos(mouseX, mouseY);
+            }
+
+            int x = element.getX(), y = element.getY();
+            int w = element.getWidth(), h = element.getHeight();
+
+            int borderColor = element.isVisible() ? 0xFF00FF00 : 0xFFFF0000;
+            if (element == dragging) borderColor = 0xFFFFFF00;
+
+            ctx.fill(x - 1, y - 1, x + w + 1, y, borderColor);
+            ctx.fill(x - 1, y + h, x + w + 1, y + h + 1, borderColor);
+            ctx.fill(x - 1, y, x, y + h, borderColor);
+            ctx.fill(x + w, y, x + w + 1, y + h, borderColor);
+
+            String status = element.isVisible() ? " [ON]" : " [OFF]";
+            int statusColor = element.isVisible() ? 0xFF00FF00 : 0xFFFF4444;
+            RenderUtils.drawText(ctx, element.getId(), x + 2, y - 10, 0xFFFFFFFF);
+            RenderUtils.drawText(ctx, status, x + 2 + RenderUtils.textWidth(element.getId()), y - 10, statusColor);
+
+            ctx.fill(x + w - 6, y + h - 6, x + w, y + h, 0xCCFFFFFF);
+
+            drawElement(ctx, element, delta);
+        }
+
+        boolean hover = overResetButton(mouseX, mouseY);
+        ctx.fill(resetBtnX, resetBtnY, resetBtnX + BTN_W, resetBtnY + BTN_H, hover ? 0xFF6A4A2C : 0xFF3A2A1C);
+        ctx.fill(resetBtnX, resetBtnY, resetBtnX + BTN_W, resetBtnY + 1, 0xFF8A6A44);
+        ctx.fill(resetBtnX, resetBtnY + BTN_H - 1, resetBtnX + BTN_W, resetBtnY + BTN_H, 0xFF8A6A44);
+        RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.reset_placement").getString(), width / 2, resetBtnY + 4, 0xFFFFE9D5);
+
+        if (System.currentTimeMillis() < resetMsgUntil) {
+            RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.placement_reset").getString(), width / 2, resetBtnY + BTN_H + 4, 0xFF7CFC55);
+        }
+
+        // Toggles de la fonctionnalité Raretés.
+        var cfg = SnkmcEssentialsClient.getInstance().getConfigManager().config();
+        RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.rarities").getString(), width / 2, rarityTogglesY - 12, 0xFFFFE9D5);
+        drawToggle(ctx, mouseX, mouseY, 0, Component.translatable("snkmc.ui.editor.emblems_chests").getString(), cfg.rarityIconsEnabled);
+        drawToggle(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.emblems_inventory").getString(), cfg.rarityInventoryEnabled);
+        drawToggle(ctx, mouseX, mouseY, 2, Component.translatable("snkmc.ui.editor.emblems_hotbar").getString(), cfg.rarityHotbarEnabled);
+        drawToggle(ctx, mouseX, mouseY, 3, Component.translatable("snkmc.ui.editor.filter_bar").getString(), cfg.rarityFilterEnabled);
+        drawToggle(ctx, mouseX, mouseY, 4, Component.translatable("snkmc.ui.editor.sort_buttons").getString(), cfg.raritySorterEnabled);
+        drawToggle(ctx, mouseX, mouseY, 5, Component.translatable("snkmc.ui.editor.ah_price_color").getString(), cfg.ahPriceColorEnabled);
+        drawToggle(ctx, mouseX, mouseY, 6, Component.translatable("snkmc.ui.editor.telemetry").getString(),
+                cfg.telemetryEnabled);
+
+        // Bouton de don, seulement visible tant qu'on est connecté à MinePiece.
+        // Traitement doré volontairement différent des toggles gris pour attirer l'œil.
+        if (ServerDetector.isOnSnkmc()) {
+            drawDonateButton(ctx, mouseX, mouseY);
+        }
+    }
+
+    private void drawDonateButton(GuiGraphicsExtractor ctx, int mouseX, int mouseY) {
+        boolean hover = inBox(mouseX, mouseY, donateBtnX, donateBtnY, BTN_W, BTN_H);
+        int fill = hover ? DONATE_FILL_HOVER : DONATE_FILL;
+        int textColor = hover ? DONATE_TEXT_HOVER : DONATE_TEXT;
+
+        ctx.fill(donateBtnX, donateBtnY, donateBtnX + BTN_W, donateBtnY + BTN_H, fill);
+        ctx.fill(donateBtnX, donateBtnY, donateBtnX + BTN_W, donateBtnY + 1, DONATE_BORDER_LIGHT);
+        ctx.fill(donateBtnX, donateBtnY + BTN_H - 1, donateBtnX + BTN_W, donateBtnY + BTN_H, DONATE_BORDER_DARK);
+        ctx.fill(donateBtnX, donateBtnY, donateBtnX + 1, donateBtnY + BTN_H, DONATE_BORDER_LIGHT);
+        ctx.fill(donateBtnX + BTN_W - 1, donateBtnY, donateBtnX + BTN_W, donateBtnY + BTN_H, DONATE_BORDER_DARK);
+
+        Font tr = Minecraft.getInstance().font;
+        Component text = Component.literal(Component.translatable("snkmc.ui.editor.donate_berries").getString() + " ")
+                .append(Component.literal(BERRY).withStyle(s -> s.withFont(new FontDescription.Resource(BERRY_FONT))));
+        int tw = tr.width(text);
+        ctx.text(tr, text, width / 2 - tw / 2, donateBtnY + (BTN_H - tr.lineHeight) / 2, textColor, false);
+    }
+
+    private void drawToggle(GuiGraphicsExtractor ctx, int mouseX, int mouseY, int index, String label, boolean on) {
+        int y = rarityTogglesY + index * TOGGLE_STEP;
+        boolean hover = inBox(mouseX, mouseY, rarityTogglesX, y, BTN_W, BTN_H);
+        ctx.fill(rarityTogglesX, y, rarityTogglesX + BTN_W, y + BTN_H, hover ? 0xFF6A4A2C : 0xFF3A2A1C);
+        ctx.fill(rarityTogglesX, y, rarityTogglesX + BTN_W, y + 1, 0xFF8A6A44);
+        ctx.fill(rarityTogglesX, y + BTN_H - 1, rarityTogglesX + BTN_W, y + BTN_H, 0xFF8A6A44);
+        RenderUtils.drawCenteredText(ctx, label + (on ? "  [ON]" : "  [OFF]"),
+                width / 2, y + 4, on ? 0xFF7CFC55 : 0xFFFF6666);
+    }
+
+    private void renderCustomize(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
+        for (HudElement element : HudElementRegistry.getElements()) {
+            int x = element.getX(), y = element.getY();
+            int w = element.getWidth(), h = element.getHeight();
+
+            // Faint clickable outline so even an empty HUD can be targeted.
+            boolean hover = element.isMouseOver(mouseX, mouseY);
+            int border = hover ? 0xFFFFFF66 : 0x66FFFFFF;
+            ctx.fill(x - 1, y - 1, x + w + 1, y, border);
+            ctx.fill(x - 1, y + h, x + w + 1, y + h + 1, border);
+            ctx.fill(x - 1, y, x, y + h, border);
+            ctx.fill(x + w, y, x + w + 1, y + h, border);
+
+            RenderUtils.drawText(ctx, element.getId() + " : " + element.getBackground().label(),
+                    x + 2, y - 10, hover ? 0xFFFFFF66 : 0xFFFFFFFF);
+
+            drawElement(ctx, element, delta);
+        }
+    }
+
+    /** Renders a HUD at its position with its scale applied. */
+    private void drawElement(GuiGraphicsExtractor ctx, HudElement element, float delta) {
+        ctx.pose().pushMatrix();
+        ctx.pose().translate(element.getX(), element.getY());
+        ctx.pose().scale(element.getScale(), element.getScale());
+        element.render(ctx, delta);
+        ctx.pose().popMatrix();
+    }
+
+    // --- input ---------------------------------------------------------------
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
+
+        // Tab switching is available in both tabs.
+        if (button == 0 && inBox(mouseX, mouseY, placementTabX(), tabsY, TAB_W, TAB_H)) {
+            tab = Tab.PLACEMENT;
+            return true;
+        }
+        if (button == 0 && inBox(mouseX, mouseY, customizeTabX(), tabsY, TAB_W, TAB_H)) {
+            tab = Tab.CUSTOMIZE;
+            return true;
+        }
+
+        if (tab == Tab.CUSTOMIZE) {
+            return clickCustomize(mouseX, mouseY, button);
+        }
+        return clickPlacement(mouseX, mouseY, button, click, doubled);
+    }
+
+    private boolean clickCustomize(double mouseX, double mouseY, int button) {
+        for (HudElement element : HudElementRegistry.getElements()) {
+            if (element.isMouseOver(mouseX, mouseY)) {
+                // Left cycles forward, right cycles backward (= forward ×2 of 3).
+                HudBackground bg = element.getBackground().next();
+                if (button == 1) bg = bg.next();
+                element.setBackground(bg);
+                SnkmcEssentialsClient.getInstance().getConfigManager().save();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean clickPlacement(double mouseX, double mouseY, int button, MouseButtonEvent click, boolean doubled) {
+        if (button == 0 && overResetButton(mouseX, mouseY)) {
+            resetPlacement();
+            return true;
+        }
+
+        if (button == 0) {
+            for (int i = 0; i < 7; i++) {
+                int ty = rarityTogglesY + i * TOGGLE_STEP;
+                if (inBox(mouseX, mouseY, rarityTogglesX, ty, BTN_W, BTN_H)) {
+                    var mgr = SnkmcEssentialsClient.getInstance().getConfigManager();
+                    var cfg = mgr.config();
+                    switch (i) {
+                        case 0 -> cfg.rarityIconsEnabled = !cfg.rarityIconsEnabled;
+                        case 1 -> cfg.rarityInventoryEnabled = !cfg.rarityInventoryEnabled;
+                        case 2 -> cfg.rarityHotbarEnabled = !cfg.rarityHotbarEnabled;
+                        case 3 -> cfg.rarityFilterEnabled = !cfg.rarityFilterEnabled;
+                        case 4 -> cfg.raritySorterEnabled = !cfg.raritySorterEnabled;
+                        case 5 -> cfg.ahPriceColorEnabled = !cfg.ahPriceColorEnabled;
+                        default -> com.snkmc.essentials.telemetry.Telemetry.setEnabled(
+                                !cfg.telemetryEnabled);
+                    }
+                    mgr.save();
+                    return true;
+                }
+            }
+        }
+
+        if (button == 0 && ServerDetector.isOnSnkmc()
+                && inBox(mouseX, mouseY, donateBtnX, donateBtnY, BTN_W, BTN_H)) {
+            Minecraft.getInstance().setScreenAndShow(new DonateScreen(this));
+            return true;
+        }
+
+        if (button == 0) {
+            for (HudElement element : HudElementRegistry.getElements()) {
+                if (element instanceof BossTimerHud bossHud && bossHud.handleClick(mouseX, mouseY)) {
+                    return true;
+                }
+            }
+        }
+
+        for (HudElement element : HudElementRegistry.getElements()) {
+            if (element.isMouseOver(mouseX, mouseY)) {
+                if (button == 0) {
+                    dragging = element;
+                    dragOffsetX = (int) mouseX - element.getX();
+                    dragOffsetY = (int) mouseY - element.getY();
+                    return true;
+                } else if (button == 1) {
+                    var layout = element.getLayout();
+                    layout.visible = !layout.visible;
+                    return true;
+                }
+            }
+        }
+        return super.mouseClicked(click, doubled);
+    }
+
+    @Override
+    public boolean mouseDragged(MouseButtonEvent click, double deltaX, double deltaY) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        if (dragging != null && click.button() == 0) {
+            var layout = dragging.getLayout();
+            layout.x = Math.max(0, Math.min(width - dragging.getWidth(), (int) mouseX - dragOffsetX));
+            layout.y = Math.max(0, Math.min(height - dragging.getHeight(), (int) mouseY - dragOffsetY));
+            return true;
+        }
+        return super.mouseDragged(click, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent click) {
+        dragging = null;
+        return super.mouseReleased(click);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (tab != Tab.PLACEMENT) return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        for (HudElement element : HudElementRegistry.getElements()) {
+            if (element.isMouseOver(mouseX, mouseY)) {
+                var layout = element.getLayout();
+                layout.scale = Math.max(0.5f, Math.min(2.0f, layout.scale + (float) verticalAmount * 0.1f));
+                return true;
+            }
+        }
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
+    public boolean isPauseScreen() { return false; }
+}

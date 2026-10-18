@@ -1,0 +1,51 @@
+package com.snkmc.essentials.haki;
+
+import com.snkmc.essentials.i18n.ServerText;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+
+/**
+ * Display-only haki cooldown timer. Listens to the server chat: when haki is
+ * activated a 30 s countdown starts, cleared when the "ready again" message
+ * arrives. No automation — purely informational.
+ */
+public final class HakiTimer {
+
+    private static final int DURATION_TICKS = 30 * 20; // 30 seconds
+
+    private static int remainingTicks = 0;
+    private static boolean active = false;
+
+    private HakiTimer() {}
+
+    public static void init() {
+        ClientReceiveMessageEvents.GAME.register((message, overlay) -> {
+            String text = message.getString();
+            if (ServerText.matches(text, ServerText.HAKI_ACTIVATED)) {
+                remainingTicks = DURATION_TICKS;
+                active = true;
+            } else if (ServerText.matches(text, ServerText.HAKI_READY)) {
+                remainingTicks = 0;
+                active = false;
+            }
+        });
+    }
+
+    public static void tick() {
+        if (active && remainingTicks > 0) {
+            remainingTicks--;
+            if (remainingTicks <= 0) active = false;
+        }
+    }
+
+    public static boolean isActive() {
+        return active && remainingTicks > 0;
+    }
+
+    public static int remainingSeconds() {
+        return (remainingTicks + 19) / 20;
+    }
+
+    public static float progress() {
+        return 1f - (float) remainingTicks / DURATION_TICKS;
+    }
+}

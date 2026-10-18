@@ -1,0 +1,10 @@
+{
+  "boss.luffy": { "sounds": ["snkmc-essentials:boss/luffy"] },
+  "boss.nightmare_luffy": { "sounds": ["snkmc-essentials:boss/nightmare_luffy"] },
+  "boss.sabo": { "sounds": ["snkmc-essentials:boss/sabo"] },
+  "boss.trafalgar_law": { "sounds": ["snkmc-essentials:boss/trafalgar_law"] },
+  "boss.ace": { "sounds": ["snkmc-essentials:boss/ace"] },
+  "boss.robin": { "sounds": ["snkmc-essentials:boss/robin"] },
+  "boss.vander_decken_ix": { "sounds": ["snkmc-essentials:boss/vander_decken_ix"] },
+  "boss.perona": { "sounds": ["snkmc-essentials:boss/perona"] }
+}

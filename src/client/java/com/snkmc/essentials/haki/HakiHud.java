@@ -1,0 +1,65 @@
+package com.snkmc.essentials.haki;
+
+import com.snkmc.essentials.SnkmcEssentialsClient;
+import com.snkmc.essentials.hud.HudElement;
+import com.snkmc.essentials.hud.ParchmentRenderer;
+import com.snkmc.essentials.util.RenderUtils;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+
+/** Small always-on HUD: shows the remaining haki cooldown, or "Prêt !" when ready. */
+public class HakiHud extends HudElement {
+
+    @Override
+    public boolean isEnabled() {
+        return SnkmcEssentialsClient.getInstance().getConfigManager().config().hakiTimerEnabled;
+    }
+
+    private static final int W = 130;
+    private static final int COLOR_TEXT = 0xFFCBC8C7;
+    private static final int COLOR_READY = 0xFF00CC00;
+    private static final int ICON_SIZE = 10;
+    // King (Conqueror's) haki icon — provided by the MinePiece server resource pack.
+    private static final Identifier KING_HAKI =
+            Identifier.fromNamespaceAndPath("items", "textures/global/haki/king_haki.png");
+
+    public HakiHud() {
+        super("haki_timer", 5, 160, W, 32);
+    }
+
+    @Override
+    public void tick() {
+        HakiTimer.tick();
+    }
+
+    @Override
+    public void render(GuiGraphicsExtractor ctx, float tickDelta) {
+        if (!SnkmcEssentialsClient.getInstance().getConfigManager().config().hakiTimerEnabled) {
+            return;
+        }
+        int h = 30;
+        this.height = h;
+        // Panel only — the title is drawn below so the logo + "Haki" stay grouped.
+        ParchmentRenderer.renderPanel(ctx, 0, 0, W, h, null, getBackground());
+
+        // Header row: logo + "Haki", centred as a single group and vertically aligned.
+        final int GAP = 3;
+        String hakiTitle = Component.translatable("snkmc.ui.haki.title").getString();
+        int titleW = RenderUtils.textWidth(hakiTitle);
+        int groupX = (W - (ICON_SIZE + GAP + titleW)) / 2;
+        int rowY = 5;
+        RenderUtils.drawIcon(ctx, KING_HAKI, groupX, rowY - 1, ICON_SIZE);
+        RenderUtils.drawText(ctx, hakiTitle, groupX + ICON_SIZE + GAP, rowY, getBackground().textColor());
+
+        int textY = 18;
+        if (HakiTimer.isActive()) {
+            // Ne compte que les joueurs qui utilisent réellement le Haki (cooldown actif),
+            // pas ceux pour qui le HUD est juste affiché en permanence (miroir de job_hud).
+            com.snkmc.essentials.telemetry.Telemetry.feature("haki_hud");
+            RenderUtils.drawCenteredText(ctx, HakiTimer.remainingSeconds() + "s", W / 2, textY, COLOR_TEXT);
+        } else {
+            RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.haki.ready").getString(), W / 2, textY, COLOR_READY);
+        }
+    }
+}

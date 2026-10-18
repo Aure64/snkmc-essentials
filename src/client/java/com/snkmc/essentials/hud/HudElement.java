@@ -1,0 +1,67 @@
+package com.snkmc.essentials.hud;
+
+import com.snkmc.essentials.SnkmcEssentialsClient;
+import com.snkmc.essentials.config.HudBackground;
+import com.snkmc.essentials.config.LayoutConfig;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+
+public abstract class HudElement {
+    protected final String id;
+    protected int defaultX, defaultY;
+    protected int width, height;
+
+    protected HudElement(String id, int defaultX, int defaultY, int width, int height) {
+        this.id = id;
+        this.defaultX = defaultX;
+        this.defaultY = defaultY;
+        this.width = width;
+        this.height = height;
+    }
+
+    public abstract void render(GuiGraphicsExtractor context, float tickDelta);
+    public abstract void tick();
+
+    public LayoutConfig.ElementLayout getLayout() {
+        var profile = SnkmcEssentialsClient.getInstance().getConfigManager()
+                .layout().activeProfile();
+        return profile.elements.computeIfAbsent(id,
+                k -> new LayoutConfig.ElementLayout(defaultX, defaultY));
+    }
+
+    public int getX() {
+        Minecraft client = Minecraft.getInstance();
+        int maxX = client.getWindow().getGuiScaledWidth() - getWidth();
+        return Math.max(0, Math.min(getLayout().x, maxX));
+    }
+    public int getY() {
+        Minecraft client = Minecraft.getInstance();
+        int maxY = client.getWindow().getGuiScaledHeight() - getHeight();
+        return Math.max(0, Math.min(getLayout().y, maxY));
+    }
+    public float getScale() { return getLayout().scale; }
+    /** Visible dans le layout (éditeur K). */
+    public boolean isVisible() { return getLayout().visible; }
+    /** Activé dans la config (interrupteur de la feature). Ni tick ni rendu sinon. */
+    public boolean isEnabled() { return true; }
+
+    /** The panel background preset chosen for this HUD (never null). */
+    public HudBackground getBackground() {
+        HudBackground bg = getLayout().background;
+        return bg == null ? HudBackground.PARCHMENT : bg;
+    }
+
+    public void setBackground(HudBackground background) {
+        getLayout().background = background;
+    }
+
+    public String getId() { return id; }
+    public int getWidth() { return (int)(width * getScale()); }
+    public int getHeight() { return (int)(height * getScale()); }
+
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        int x = getX(), y = getY();
+        return mouseX >= x && mouseX <= x + getWidth()
+                && mouseY >= y && mouseY <= y + getHeight();
+    }
+}
