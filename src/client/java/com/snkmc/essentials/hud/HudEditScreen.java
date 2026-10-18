@@ -68,7 +68,7 @@ public class HudEditScreen extends Screen {
         rarityTogglesX = (width - BTN_W) / 2;
         rarityTogglesY = resetBtnY + BTN_H + 28;
         donateBtnX = (width - BTN_W) / 2;
-        donateBtnY = rarityTogglesY + 7 * TOGGLE_STEP + 12;
+        donateBtnY = rarityTogglesY + 2 * TOGGLE_STEP + 12;
     }
 
     // --- geometry helpers ----------------------------------------------------
@@ -185,14 +185,10 @@ public class HudEditScreen extends Screen {
 
         // Toggles de la fonctionnalité Raretés.
         var cfg = SnkmcEssentialsClient.getInstance().getConfigManager().config();
-        RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.rarities").getString(), width / 2, rarityTogglesY - 12, 0xFFFFE9D5);
-        drawToggle(ctx, mouseX, mouseY, 0, Component.translatable("snkmc.ui.editor.emblems_chests").getString(), cfg.rarityIconsEnabled);
-        drawToggle(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.emblems_inventory").getString(), cfg.rarityInventoryEnabled);
-        drawToggle(ctx, mouseX, mouseY, 2, Component.translatable("snkmc.ui.editor.emblems_hotbar").getString(), cfg.rarityHotbarEnabled);
-        drawToggle(ctx, mouseX, mouseY, 3, Component.translatable("snkmc.ui.editor.filter_bar").getString(), cfg.rarityFilterEnabled);
-        drawToggle(ctx, mouseX, mouseY, 4, Component.translatable("snkmc.ui.editor.sort_buttons").getString(), cfg.raritySorterEnabled);
-        drawToggle(ctx, mouseX, mouseY, 5, Component.translatable("snkmc.ui.editor.ah_price_color").getString(), cfg.ahPriceColorEnabled);
-        drawToggle(ctx, mouseX, mouseY, 6, Component.translatable("snkmc.ui.editor.telemetry").getString(),
+        // SnkMC : seules les options du périmètre (AH) + la télémétrie.
+        RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.options").getString(), width / 2, rarityTogglesY - 12, 0xFFFFE9D5);
+        drawToggle(ctx, mouseX, mouseY, 0, Component.translatable("snkmc.ui.editor.ah_price_color").getString(), cfg.ahPriceColorEnabled);
+        drawToggle(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.telemetry").getString(),
                 cfg.telemetryEnabled);
 
         // Bouton de don, seulement visible tant qu'on est connecté à MinePiece.
@@ -304,18 +300,13 @@ public class HudEditScreen extends Screen {
         }
 
         if (button == 0) {
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 2; i++) {
                 int ty = rarityTogglesY + i * TOGGLE_STEP;
                 if (inBox(mouseX, mouseY, rarityTogglesX, ty, BTN_W, BTN_H)) {
                     var mgr = SnkmcEssentialsClient.getInstance().getConfigManager();
                     var cfg = mgr.config();
                     switch (i) {
-                        case 0 -> cfg.rarityIconsEnabled = !cfg.rarityIconsEnabled;
-                        case 1 -> cfg.rarityInventoryEnabled = !cfg.rarityInventoryEnabled;
-                        case 2 -> cfg.rarityHotbarEnabled = !cfg.rarityHotbarEnabled;
-                        case 3 -> cfg.rarityFilterEnabled = !cfg.rarityFilterEnabled;
-                        case 4 -> cfg.raritySorterEnabled = !cfg.raritySorterEnabled;
-                        case 5 -> cfg.ahPriceColorEnabled = !cfg.ahPriceColorEnabled;
+                        case 0 -> cfg.ahPriceColorEnabled = !cfg.ahPriceColorEnabled;
                         default -> com.snkmc.essentials.telemetry.Telemetry.setEnabled(
                                 !cfg.telemetryEnabled);
                     }

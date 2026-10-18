@@ -74,5 +74,6 @@
     "snkmc.ui.boss.refreshing": "Refreshing via /boss…",
     "snkmc.ui.boss.updated": "Updated %s ago",
     "snkmc.ui.boss.never": "Not fetched yet",
-    "snkmc.ui.boss.nodata": "(no data)"
+    "snkmc.ui.boss.nodata": "(no data)",
+    "snkmc.ui.editor.options": "Options"
 }

@@ -69,11 +69,9 @@ public class SnkmcEssentialsClient implements ClientModInitializer {
         // pas ici et spammeraient le chat.
         HudElementRegistry.register(new ParcheminHud());
 
-        // Formats confirmés identiques sur SnkMC (dump du 2026-10-18) : lore AH
-        // « Prix de vente / Prix moyen » et marqueurs de rareté 孔宜/恨繁/伴叹.
+        // Format AH confirmé identique sur SnkMC (dump du 2026-10-18) :
+        // lore « Prix de vente / Prix moyen ». Périmètre voulu : parchemins + AH.
         com.snkmc.essentials.ah.AhTooltip.register();
-        com.snkmc.essentials.rarity.RarityHotbarOverlay.register();
-        registerRarityScreenHooks();
 
         UpdateChecker.init();
         com.snkmc.essentials.telemetry.Telemetry.init();
