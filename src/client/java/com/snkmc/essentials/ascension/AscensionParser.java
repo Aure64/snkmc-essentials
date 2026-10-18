@@ -47,6 +47,15 @@ public final class AscensionParser {
         Matcher asc = ASCENSION.matcher(nbt);
         if (asc.find()) ascension = Integer.parseInt(asc.group(1));
 
+        // SnkMC : la « Lame en bois » (craft) porte "1:0:0" sans être améliorable
+        // (« Cette arme ne peut pas être améliorée »). Les lames améliorables ont
+        // toutes le champ items:experience-lock ; les armes au max ont un compteur
+        // d'ascension. Un "1:0:0" sans l'un ni l'autre n'a jamais pu gagner d'XP.
+        if (level == 1 && xp == 0 && maxXp == 0 && ascension == 0
+                && !nbt.contains("items:experience-lock")) {
+            return Optional.empty();
+        }
+
         String internal = "";
         Matcher in = INTERNAL_NAME.matcher(nbt);
         if (in.find()) internal = in.group(1).toLowerCase();

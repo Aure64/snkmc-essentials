@@ -13,7 +13,7 @@
     "snkmc.ui.pets.title": "Active pets",
     "snkmc.ui.pets.hint": "Loading… (or open /pets)",
     "snkmc.ui.boss.title": "Boss Timers",
-    "snkmc.ui.ascensions.title": "Ascensions",
+    "snkmc.ui.ascensions.title": "Weapons",
     "snkmc.ui.ascensions.fruits": "Fruits",
     "snkmc.ui.ascensions.weapons": "Weapons",
     "snkmc.ui.scrolls.title": "Scrolls",
@@ -75,5 +75,10 @@
     "snkmc.ui.boss.updated": "Updated %s ago",
     "snkmc.ui.boss.never": "Not fetched yet",
     "snkmc.ui.boss.nodata": "(no data)",
-    "snkmc.ui.editor.options": "Options"
+    "snkmc.ui.editor.options": "Options",
+    "snkmc.ui.help.weapons.title": "Weapons",
+    "snkmc.ui.help.weapons.line1": "Level and XP of your blades as HUD (auto-scan).",
+    "snkmc.ui.help.weapons.line2": "Marker when an ascension is available.",
+    "snkmc.ui.help.ah.title": "Auction house",
+    "snkmc.ui.help.ah.line1": "Per-unit price and gap vs average price in the tooltip."
 }

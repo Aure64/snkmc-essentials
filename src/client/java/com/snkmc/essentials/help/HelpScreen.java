@@ -71,6 +71,13 @@ public class HelpScreen extends Screen {
             new Feature(tr("snkmc.ui.help.scrolls.title"), new Line[]{
                 info(tr("snkmc.ui.help.scrolls.line1")),
             }),
+            new Feature(tr("snkmc.ui.help.weapons.title"), new Line[]{
+                info(tr("snkmc.ui.help.weapons.line1")),
+                info(tr("snkmc.ui.help.weapons.line2")),
+            }),
+            new Feature(tr("snkmc.ui.help.ah.title"), new Line[]{
+                info(tr("snkmc.ui.help.ah.line1")),
+            }),
             new Feature(tr("snkmc.ui.help.hud_editor.title"), new Line[]{
                 important(tr("snkmc.ui.help.hud_editor.line1")),
                 info(tr("snkmc.ui.help.hud_editor.line2")),
@@ -83,7 +90,7 @@ public class HelpScreen extends Screen {
     }
 
     // Line counts per feature (fixed, not language-dependent) used for layout.
-    private static final int[] FEATURE_LINE_COUNTS = {1, 3, 1};
+    private static final int[] FEATURE_LINE_COUNTS = {1, 2, 1, 3, 1};
 
     private static final int PANEL_H;
 

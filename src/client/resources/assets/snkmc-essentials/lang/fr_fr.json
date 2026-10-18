@@ -13,7 +13,7 @@
     "snkmc.ui.pets.title": "Pets actifs",
     "snkmc.ui.pets.hint": "Chargement… (ou ouvre /pets)",
     "snkmc.ui.boss.title": "Boss Timers",
-    "snkmc.ui.ascensions.title": "Ascensions",
+    "snkmc.ui.ascensions.title": "Armes",
     "snkmc.ui.ascensions.fruits": "Fruits",
     "snkmc.ui.ascensions.weapons": "Armes",
     "snkmc.ui.scrolls.title": "Parchemins",
@@ -75,5 +75,10 @@
     "snkmc.ui.boss.updated": "Mis à jour il y a %s",
     "snkmc.ui.boss.never": "Pas encore relevé",
     "snkmc.ui.boss.nodata": "(aucune donnée)",
-    "snkmc.ui.editor.options": "Options"
+    "snkmc.ui.editor.options": "Options",
+    "snkmc.ui.help.weapons.title": "Armes",
+    "snkmc.ui.help.weapons.line1": "Niveau et XP de tes lames en HUD (scan auto).",
+    "snkmc.ui.help.weapons.line2": "Marqueur quand une ascension est disponible.",
+    "snkmc.ui.help.ah.title": "Hôtel des ventes",
+    "snkmc.ui.help.ah.line1": "Prix par unité et écart vs prix moyen dans le tooltip."
 }

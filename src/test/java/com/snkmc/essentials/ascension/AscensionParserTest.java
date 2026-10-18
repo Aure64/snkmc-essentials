@@ -94,4 +94,26 @@ class AscensionParserTest {
             "{\"items:internal-name\":\"crystal\",\"items:rarity\":\"rare\"}");
         assertTrue(item.isEmpty());
     }
+
+    // SnkMC (dump 2026-10-18) : lame craftée non améliorable, "1:0:0" sans lock.
+    private static final String WOOD_BLADE_NBT =
+        "{\"items:experience-xp\":\"1:0:0\",\"items:internal-name\":\"wood_blade\","
+      + "\"items:rarity\":\"common\",\"items:version\":3}";
+
+    // SnkMC : lame améliorable au max, en attente d'ascension (lock présent).
+    private static final String KENNY_BLADE_NBT =
+        "{\"items:experience-lock\":1b,\"items:experience-xp\":\"19:0:0\","
+      + "\"items:internal-name\":\"kenny-blade\",\"items:rarity\":\"legendary\"}";
+
+    @Test
+    void nonUpgradableWoodBladeIsIgnored() {
+        assertTrue(AscensionParser.parse("Lame en bois", WOOD_BLADE_NBT).isEmpty());
+    }
+
+    @Test
+    void lockedMaxedBladeIsAvailable() {
+        AscensionItem item = AscensionParser.parse("Lame de Kenny", KENNY_BLADE_NBT).orElseThrow();
+        assertEquals(19, item.level());
+        assertTrue(item.available());
+    }
 }

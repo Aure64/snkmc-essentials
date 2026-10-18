@@ -68,6 +68,8 @@ public class SnkmcEssentialsClient implements ClientModInitializer {
         // relevés — les commandes /boss, /pets, /pass quests n'existent sans doute
         // pas ici et spammeraient le chat.
         HudElementRegistry.register(new ParcheminHud());
+        // Armes : même NBT d'XP (items:experience-xp) que les armes MinePiece.
+        HudElementRegistry.register(new AscensionHud());
 
         // Format AH confirmé identique sur SnkMC (dump du 2026-10-18) :
         // lore « Prix de vente / Prix moyen ». Périmètre voulu : parchemins + AH.
