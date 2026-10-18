@@ -60,14 +60,14 @@ public class SnkmcEssentialsClient implements ClientModInitializer {
         HudElementRegistry.init();
         IslandDetector.getInstance();
 
-        // SnkMC : seuls les parchemins et le HUD métier sont actifs pour l'instant.
+        // SnkMC : seuls les parchemins sont actifs pour l'instant (HUD métier retiré
+        // à la demande de l'auteur).
         // Les autres features héritées de MinePiece (boss, pets, ascension, haki,
         // quêtes du pass, rareté, AH) restent dans le code mais ne sont pas
         // enregistrées tant que les écrans SnkMC correspondants n'ont pas été
         // relevés — les commandes /boss, /pets, /pass quests n'existent sans doute
         // pas ici et spammeraient le chat.
         HudElementRegistry.register(new ParcheminHud());
-        HudElementRegistry.register(new JobHud());
 
         // Formats confirmés identiques sur SnkMC (dump du 2026-10-18) : lore AH
         // « Prix de vente / Prix moyen » et marqueurs de rareté 孔宜/恨繁/伴叹.

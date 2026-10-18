@@ -65,14 +65,11 @@ public class HelpScreen extends Screen {
         return Component.translatable(key).getString();
     }
 
-    // SnkMC : seules les features actives (parchemins, métier) sont décrites.
+    // SnkMC : seules les features actives (parchemins) sont décrites.
     private static Feature[] buildFeatures() {
         return new Feature[]{
             new Feature(tr("snkmc.ui.help.scrolls.title"), new Line[]{
                 info(tr("snkmc.ui.help.scrolls.line1")),
-            }),
-            new Feature(tr("snkmc.ui.help.job.title"), new Line[]{
-                info(tr("snkmc.ui.help.job.line1")),
             }),
             new Feature(tr("snkmc.ui.help.hud_editor.title"), new Line[]{
                 important(tr("snkmc.ui.help.hud_editor.line1")),
@@ -86,7 +83,7 @@ public class HelpScreen extends Screen {
     }
 
     // Line counts per feature (fixed, not language-dependent) used for layout.
-    private static final int[] FEATURE_LINE_COUNTS = {1, 1, 3, 1};
+    private static final int[] FEATURE_LINE_COUNTS = {1, 3, 1};
 
     private static final int PANEL_H;
 
