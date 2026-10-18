@@ -40,7 +40,7 @@ public class ModConfig {
     public boolean rarityInventoryEnabled = true;  // emblèmes dans l'inventaire joueur (E)
     public boolean rarityHotbarEnabled = true;     // emblèmes sur la hotbar (en jeu)
     public boolean rarityFilterEnabled = true;
-    public boolean raritySorterEnabled = true;
+    public boolean raritySorterEnabled = false; // SnkMC : trieur non activé tant que la décision n'est pas prise
 
     // Télémétrie anonyme (voir docs/superpowers/specs/2026-09-01-telemetrie-design.md).
     public boolean telemetryEnabled = false; // TODO SnkMC : projet PostHog dédié avant d'activer
