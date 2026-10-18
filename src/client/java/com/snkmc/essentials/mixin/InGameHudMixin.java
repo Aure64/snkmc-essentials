@@ -15,8 +15,6 @@ public class InGameHudMixin {
     @Inject(method = "setOverlayMessage", at = @At("HEAD"))
     private void minepiece$jobProgress(Component message, boolean tinted, CallbackInfo ci) {
         if (message != null) {
-            // TEMP SnkMC : relevé du format de l'action bar (à retirer avant release)
-            com.snkmc.essentials.SnkmcEssentialsClient.LOGGER.info("[ActionBar] '{}'", message.getString());
             JobTracker.onActionBar(message.getString());
         }
     }

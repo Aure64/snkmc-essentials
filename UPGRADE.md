@@ -123,18 +123,11 @@ the compiler until the right class was inspected:
 Then launch the client (`./gradlew runClient`) and confirm no mixin apply errors in the log. That
 is the only real proof.
 
-## Highest-risk area: `network/`
+## Dormant code: `network/`
 
-`BackgroundGuiRefresh` + `ServerGuiInterceptor` read server containers blind: they send a chat
-command (`/boss`, `/pets`, `/pass quests`), cancel the `OpenScreen` packet client-side, harvest
-the content packets for that container id, then send a single `ServerboundContainerClosePacket`.
-No click is ever sent. They depend on server-side behaviour that no compiler and no mapping check
-can validate, and on the packet mixins in `ClientPlayNetworkHandlerMixin` running on the client
-thread only. Design and invariants: `docs/architecture-background-refresh.md`.
-
-Test this **first** on the live server after any upgrade: the three HUDs must fill on join
-within a few seconds, with no screen flashing and no `Hard timeout` / `No screen opened` line
-in `latest.log`, and the player's own GUIs (compass, chests, `/ah`) must stay usable meanwhile.
+`BackgroundGuiRefresh` + `ServerGuiInterceptor` (inherited from MinePiece Essentials) are
+compiled but **not used** on SnkMC: no HUD sends a command. Keep them compiling, do not wire
+them up without checking the SnkMC rules and the server commands first.
 
 ## Philosophy
 
@@ -159,8 +152,8 @@ and occasionally drops an import without renaming its usages. Grep for leftovers
 
 ## After a successful upgrade
 
-1. Test in-game on the MinePiece server: boss timer detection, parchment reading, HUD edit, and
-   the background GUI refresh above all.
+1. Test in-game on SnkMC: parchment reading, weapons panel, job HUD while harvesting, AH
+   tooltip, HUD edit.
 2. Commit `gradle.properties`, `fabric.mod.json`, and any mixin fixes.
 3. Tag the release: `git tag vX.Y.Z && git push --tags`, then `gh release create` with the jar
    (as a **pre-release** if players are still on the previous Minecraft version — the in-mod
