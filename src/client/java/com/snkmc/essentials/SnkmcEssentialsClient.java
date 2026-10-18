@@ -76,6 +76,9 @@ public class SnkmcEssentialsClient implements ClientModInitializer {
         // Format AH confirmé identique sur SnkMC (dump du 2026-10-18) :
         // lore « Prix de vente / Prix moyen ». Périmètre voulu : parchemins + AH.
         com.snkmc.essentials.ah.AhTooltip.register();
+        // Filtre de rareté (voile sur les raretés non choisies) : glyphes et textures
+        // d'emblèmes identiques dans le pack SnkMC (vérifié le 2026-10-18).
+        registerRarityScreenHooks();
 
         UpdateChecker.init();
         com.snkmc.essentials.telemetry.Telemetry.init();

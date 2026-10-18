@@ -18,7 +18,7 @@
     "snkmc.ui.ascensions.weapons": "Armes",
     "snkmc.ui.scrolls.title": "Parchemins",
     "snkmc.ui.editor.rarities": "Raretes",
-    "snkmc.ui.editor.emblems_chests": "Emblemes - coffres",
+    "snkmc.ui.editor.emblems_chests": "Emblemes de rarete (menus)",
     "snkmc.ui.editor.emblems_inventory": "Emblemes - inventaire",
     "snkmc.ui.editor.emblems_hotbar": "Emblemes - hotbar",
     "snkmc.ui.editor.filter_bar": "Barre de filtre",
@@ -80,5 +80,6 @@
     "snkmc.ui.help.weapons.line1": "Niveau et XP de tes lames en HUD (scan auto).",
     "snkmc.ui.help.weapons.line2": "Marqueur quand une ascension est disponible.",
     "snkmc.ui.help.ah.title": "Hôtel des ventes",
-    "snkmc.ui.help.ah.line1": "Prix par unité et écart vs prix moyen dans le tooltip."
+    "snkmc.ui.help.ah.line1": "Prix par unité et écart vs prix moyen dans le tooltip.",
+    "snkmc.ui.help.ah.line2": "Barre à droite du menu : clique une rareté pour griser les autres."
 }

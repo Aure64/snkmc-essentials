@@ -18,7 +18,7 @@
     "snkmc.ui.ascensions.weapons": "Weapons",
     "snkmc.ui.scrolls.title": "Scrolls",
     "snkmc.ui.editor.rarities": "Rarities",
-    "snkmc.ui.editor.emblems_chests": "Emblems - chests",
+    "snkmc.ui.editor.emblems_chests": "Rarity emblems (menus)",
     "snkmc.ui.editor.emblems_inventory": "Emblems - inventory",
     "snkmc.ui.editor.emblems_hotbar": "Emblems - hotbar",
     "snkmc.ui.editor.filter_bar": "Filter bar",
@@ -80,5 +80,6 @@
     "snkmc.ui.help.weapons.line1": "Level and XP of your blades as HUD (auto-scan).",
     "snkmc.ui.help.weapons.line2": "Marker when an ascension is available.",
     "snkmc.ui.help.ah.title": "Auction house",
-    "snkmc.ui.help.ah.line1": "Per-unit price and gap vs average price in the tooltip."
+    "snkmc.ui.help.ah.line1": "Per-unit price and gap vs average price in the tooltip.",
+    "snkmc.ui.help.ah.line2": "Bar on the right of the menu: click a rarity to dim the others."
 }

@@ -36,9 +36,9 @@ public class ModConfig {
     public boolean ahPricePerUnitEnabled = true;
     public boolean ahPriceColorEnabled = true;     // liseré couleur + écart % vs moyenne (AH)
 
-    public boolean rarityIconsEnabled = true;      // emblèmes dans les coffres/conteneurs
-    public boolean rarityInventoryEnabled = true;  // emblèmes dans l'inventaire joueur (E)
-    public boolean rarityHotbarEnabled = true;     // emblèmes sur la hotbar (en jeu)
+    public boolean rarityIconsEnabled = false;      // emblèmes dans les coffres/conteneurs
+    public boolean rarityInventoryEnabled = false;  // emblèmes dans l'inventaire joueur (E)
+    public boolean rarityHotbarEnabled = false;     // emblèmes sur la hotbar (en jeu)
     public boolean rarityFilterEnabled = true;
     public boolean raritySorterEnabled = false; // SnkMC : trieur non activé tant que la décision n'est pas prise
 

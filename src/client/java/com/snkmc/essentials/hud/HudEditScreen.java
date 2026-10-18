@@ -68,7 +68,7 @@ public class HudEditScreen extends Screen {
         rarityTogglesX = (width - BTN_W) / 2;
         rarityTogglesY = resetBtnY + BTN_H + 28;
         donateBtnX = (width - BTN_W) / 2;
-        donateBtnY = rarityTogglesY + 2 * TOGGLE_STEP + 12;
+        donateBtnY = rarityTogglesY + 4 * TOGGLE_STEP + 12;
     }
 
     // --- geometry helpers ----------------------------------------------------
@@ -188,7 +188,9 @@ public class HudEditScreen extends Screen {
         // SnkMC : seules les options du périmètre (AH) + la télémétrie.
         RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.options").getString(), width / 2, rarityTogglesY - 12, 0xFFFFE9D5);
         drawToggle(ctx, mouseX, mouseY, 0, Component.translatable("snkmc.ui.editor.ah_price_color").getString(), cfg.ahPriceColorEnabled);
-        drawToggle(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.telemetry").getString(),
+        drawToggle(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.filter_bar").getString(), cfg.rarityFilterEnabled);
+        drawToggle(ctx, mouseX, mouseY, 2, Component.translatable("snkmc.ui.editor.emblems_chests").getString(), cfg.rarityIconsEnabled);
+        drawToggle(ctx, mouseX, mouseY, 3, Component.translatable("snkmc.ui.editor.telemetry").getString(),
                 cfg.telemetryEnabled);
 
         // Bouton de don, seulement visible tant qu'on est connecté à MinePiece.
@@ -300,13 +302,15 @@ public class HudEditScreen extends Screen {
         }
 
         if (button == 0) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 4; i++) {
                 int ty = rarityTogglesY + i * TOGGLE_STEP;
                 if (inBox(mouseX, mouseY, rarityTogglesX, ty, BTN_W, BTN_H)) {
                     var mgr = SnkmcEssentialsClient.getInstance().getConfigManager();
                     var cfg = mgr.config();
                     switch (i) {
                         case 0 -> cfg.ahPriceColorEnabled = !cfg.ahPriceColorEnabled;
+                        case 1 -> cfg.rarityFilterEnabled = !cfg.rarityFilterEnabled;
+                        case 2 -> cfg.rarityIconsEnabled = !cfg.rarityIconsEnabled;
                         default -> com.snkmc.essentials.telemetry.Telemetry.setEnabled(
                                 !cfg.telemetryEnabled);
                     }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2 — unreleased
+
+- **Rarity filter** — bar on the right of any server menu (auction house included): click a rarity to dim every other one. Rarity emblems on items can be switched on in `K`.
+
 ## 0.1.1 — 2026-10-18
 
 - New icon.
