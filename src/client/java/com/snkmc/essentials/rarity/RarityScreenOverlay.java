@@ -25,7 +25,12 @@ public final class RarityScreenOverlay {
 
     private static final int BTN = 14;       // taille d'un bouton
     private static final int GAP = 2;        // espace entre boutons
-    private static final int PAD = 4;        // marge barre <-> conteneur
+    // Marge barre <-> conteneur. Le pack SnkMC dessine un cadre décoré ~20 px plus
+    // large que le fond vanilla (176 px) : on décale pour ne pas le chevaucher.
+    private static final int PAD = 26;
+    // Trieur jamais proposé sur SnkMC (seule automatisation tolérée sur MinePiece,
+    // décision non étendue ici) : coupé en dur, indépendamment de la config.
+    private static final boolean SORTER_AVAILABLE = false;
 
     enum HitKind { FILTER, CLEAR, SORT_RARITY, SORT_ITEM }
 
@@ -114,7 +119,7 @@ public final class RarityScreenOverlay {
         }
 
         // Boutons de tri (seulement sur un conteneur de stockage).
-        if (c.raritySorterEnabled && RaritySorter.canSort(screen)) {
+        if (SORTER_AVAILABLE && c.raritySorterEnabled && RaritySorter.canSort(screen)) {
             if (y > bgY) y += GAP; // petit séparateur sous les filtres
 
             // Tri par rareté
