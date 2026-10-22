@@ -1,5 +1,6 @@
 package com.snkmc.essentials.config;
 
+import com.snkmc.essentials.ah.AhPriceColors;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,6 +36,10 @@ public class ModConfig {
 
     public boolean ahPricePerUnitEnabled = true;
     public boolean ahPriceColorEnabled = true;     // liseré couleur + écart % vs moyenne (AH)
+    // Couleurs des bandes de prix AH, "#RRGGBB" (voir AhPriceColors). Illisible → défaut.
+    public String ahColorCheap = AhPriceColors.DEFAULT_CHEAP;         // moins cher que la moyenne
+    public String ahColorFair = AhPriceColors.DEFAULT_FAIR;           // au prix (±10 %)
+    public String ahColorExpensive = AhPriceColors.DEFAULT_EXPENSIVE; // trop cher
 
     public boolean rarityIconsEnabled = false;      // emblèmes dans les coffres/conteneurs
     public boolean rarityInventoryEnabled = false;  // emblèmes dans l'inventaire joueur (E)

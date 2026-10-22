@@ -2,6 +2,7 @@ package com.snkmc.essentials.hud;
 
 import com.snkmc.essentials.SnkmcEssentialsClient;
 import com.snkmc.essentials.ServerDetector;
+import com.snkmc.essentials.ah.AhColorScreen;
 import com.snkmc.essentials.boss.BossTimerHud;
 import com.snkmc.essentials.config.HudBackground;
 import com.snkmc.essentials.donate.DonateScreen;
@@ -35,6 +36,7 @@ public class HudEditScreen extends Screen {
     // Toggles de la fonctionnalité Raretés (onglet Placement).
     private int rarityTogglesX, rarityTogglesY;
     private static final int TOGGLE_STEP = BTN_H + 4;
+    private static final int TOGGLE_COUNT = 5;
 
     // Bouton de don, tout en bas de l'onglet Placement (visible seulement sur MinePiece).
     private int donateBtnX, donateBtnY;
@@ -68,7 +70,7 @@ public class HudEditScreen extends Screen {
         rarityTogglesX = (width - BTN_W) / 2;
         rarityTogglesY = resetBtnY + BTN_H + 28;
         donateBtnX = (width - BTN_W) / 2;
-        donateBtnY = rarityTogglesY + 4 * TOGGLE_STEP + 12;
+        donateBtnY = rarityTogglesY + TOGGLE_COUNT * TOGGLE_STEP + 12;
     }
 
     // --- geometry helpers ----------------------------------------------------
@@ -188,9 +190,10 @@ public class HudEditScreen extends Screen {
         // SnkMC : seules les options du périmètre (AH) + la télémétrie.
         RenderUtils.drawCenteredText(ctx, Component.translatable("snkmc.ui.editor.options").getString(), width / 2, rarityTogglesY - 12, 0xFFFFE9D5);
         drawToggle(ctx, mouseX, mouseY, 0, Component.translatable("snkmc.ui.editor.ah_price_color").getString(), cfg.ahPriceColorEnabled);
-        drawToggle(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.filter_bar").getString(), cfg.rarityFilterEnabled);
-        drawToggle(ctx, mouseX, mouseY, 2, Component.translatable("snkmc.ui.editor.emblems_chests").getString(), cfg.rarityIconsEnabled);
-        drawToggle(ctx, mouseX, mouseY, 3, Component.translatable("snkmc.ui.editor.telemetry").getString(),
+        drawButton(ctx, mouseX, mouseY, 1, Component.translatable("snkmc.ui.editor.ah_colors").getString(), 0xFFFFE9D5);
+        drawToggle(ctx, mouseX, mouseY, 2, Component.translatable("snkmc.ui.editor.filter_bar").getString(), cfg.rarityFilterEnabled);
+        drawToggle(ctx, mouseX, mouseY, 3, Component.translatable("snkmc.ui.editor.emblems_chests").getString(), cfg.rarityIconsEnabled);
+        drawToggle(ctx, mouseX, mouseY, 4, Component.translatable("snkmc.ui.editor.telemetry").getString(),
                 cfg.telemetryEnabled);
 
         // Bouton de don, seulement visible tant qu'on est connecté à MinePiece.
@@ -219,13 +222,17 @@ public class HudEditScreen extends Screen {
     }
 
     private void drawToggle(GuiGraphicsExtractor ctx, int mouseX, int mouseY, int index, String label, boolean on) {
+        drawButton(ctx, mouseX, mouseY, index, label + (on ? "  [ON]" : "  [OFF]"), on ? 0xFF7CFC55 : 0xFFFF6666);
+    }
+
+    /** Bouton de la colonne d'options (même cadre que les toggles), texte dans {@code textColor}. */
+    private void drawButton(GuiGraphicsExtractor ctx, int mouseX, int mouseY, int index, String label, int textColor) {
         int y = rarityTogglesY + index * TOGGLE_STEP;
         boolean hover = inBox(mouseX, mouseY, rarityTogglesX, y, BTN_W, BTN_H);
         ctx.fill(rarityTogglesX, y, rarityTogglesX + BTN_W, y + BTN_H, hover ? 0xFF6A4A2C : 0xFF3A2A1C);
         ctx.fill(rarityTogglesX, y, rarityTogglesX + BTN_W, y + 1, 0xFF8A6A44);
         ctx.fill(rarityTogglesX, y + BTN_H - 1, rarityTogglesX + BTN_W, y + BTN_H, 0xFF8A6A44);
-        RenderUtils.drawCenteredText(ctx, label + (on ? "  [ON]" : "  [OFF]"),
-                width / 2, y + 4, on ? 0xFF7CFC55 : 0xFFFF6666);
+        RenderUtils.drawCenteredText(ctx, label, width / 2, y + 4, textColor);
     }
 
     private void renderCustomize(GuiGraphicsExtractor ctx, int mouseX, int mouseY, float delta) {
@@ -302,15 +309,19 @@ public class HudEditScreen extends Screen {
         }
 
         if (button == 0) {
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < TOGGLE_COUNT; i++) {
                 int ty = rarityTogglesY + i * TOGGLE_STEP;
                 if (inBox(mouseX, mouseY, rarityTogglesX, ty, BTN_W, BTN_H)) {
                     var mgr = SnkmcEssentialsClient.getInstance().getConfigManager();
                     var cfg = mgr.config();
                     switch (i) {
                         case 0 -> cfg.ahPriceColorEnabled = !cfg.ahPriceColorEnabled;
-                        case 1 -> cfg.rarityFilterEnabled = !cfg.rarityFilterEnabled;
-                        case 2 -> cfg.rarityIconsEnabled = !cfg.rarityIconsEnabled;
+                        case 1 -> {
+                            Minecraft.getInstance().setScreenAndShow(new AhColorScreen(this));
+                            return true;
+                        }
+                        case 2 -> cfg.rarityFilterEnabled = !cfg.rarityFilterEnabled;
+                        case 3 -> cfg.rarityIconsEnabled = !cfg.rarityIconsEnabled;
                         default -> com.snkmc.essentials.telemetry.Telemetry.setEnabled(
                                 !cfg.telemetryEnabled);
                     }

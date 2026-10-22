@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 — 2026-10-22
+
+- **AH price colors** — new "AH price colors..." screen in `K`: pick any color for good deals, fair prices and overpriced listings (palette or hex), with a live preview; one-click "swap yellow / green" for those who want good deals in green. Also editable in `config/snkmc-essentials/config.json` (`ahColorCheap`, `ahColorFair`, `ahColorExpensive`).
+
 ## 0.1.2 — 2026-10-18
 
 - **Rarity filter** — bar on the right of any server menu (auction house included): click a rarity to dim every other one. Rarity emblems on items can be switched on in `K`.
