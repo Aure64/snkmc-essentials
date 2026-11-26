@@ -133,7 +133,7 @@ public class SnkmcEssentialsClient implements ClientModInitializer {
 
             BossTracker.getInstance().tick();
 
-            if (pendingHelp && client.screen == null && client.player != null) {
+            if (pendingHelp && client.gui.screen() == null && client.player != null) {
                 client.setScreenAndShow(new HelpScreen());
                 pendingHelp = false;
                 helpShownThisSession = true;

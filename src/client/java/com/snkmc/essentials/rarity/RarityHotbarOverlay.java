@@ -22,7 +22,7 @@ public final class RarityHotbarOverlay {
 
     private static void render(GuiGraphicsExtractor ctx) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.options.hideGui) return;
+        if (mc.player == null || mc.gui.hud.isHidden()) return;
         if (!ServerDetector.isOnSnkmc()) return;
         if (!SnkmcEssentialsClient.getInstance().getConfigManager().config().rarityHotbarEnabled) return;
         if (mc.gameMode != null

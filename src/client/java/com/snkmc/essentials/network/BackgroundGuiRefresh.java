@@ -48,7 +48,7 @@ public final class BackgroundGuiRefresh {
         if (!isReady()) return false;
         // Ne jamais voler un écran conteneur au joueur (coffre, inventaire, GUI serveur) :
         // on repassera au tick suivant. Les autres écrans (éditeur K…) ne gênent pas.
-        if (client.screen instanceof AbstractContainerScreen<?>) return false;
+        if (client.gui.screen() instanceof AbstractContainerScreen<?>) return false;
 
         long now = System.currentTimeMillis();
         busy = true;

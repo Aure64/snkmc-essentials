@@ -89,7 +89,7 @@ public final class PassQuestScanner {
             }
         }
 
-        if (client.screen instanceof AbstractContainerScreen<?> screen && onMinePiece) {
+        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen && onMinePiece) {
             long fp = StackFingerprint.ofSlots(screen.getMenu().slots);
             if (screen == lastScreen && fp == lastFingerprint) return; // écran inchangé
             lastScreen = screen;

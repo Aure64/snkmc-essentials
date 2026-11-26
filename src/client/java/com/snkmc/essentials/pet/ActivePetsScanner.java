@@ -74,7 +74,7 @@ public final class ActivePetsScanner {
         }
 
         if (ticks++ % SCAN_INTERVAL != 0) return;
-        if (client.screen instanceof AbstractContainerScreen<?> screen && onMinePiece) {
+        if (client.gui.screen() instanceof AbstractContainerScreen<?> screen && onMinePiece) {
             long fp = StackFingerprint.ofSlots(screen.getMenu().slots);
             if (screen == lastScreen && fp == lastFingerprint) return; // rien n'a changé
             lastScreen = screen;

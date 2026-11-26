@@ -20,7 +20,7 @@ public class HudElementRegistry {
                 Identifier.fromNamespaceAndPath("snkmc-essentials", "huds"),
                 (context, renderTickCounter) -> {
             Minecraft client = Minecraft.getInstance();
-            if (client.player == null || client.options.hideGui) return;
+            if (client.player == null || client.gui.hud.isHidden()) return;
             if (!ServerDetector.isOnSnkmc()) return;
 
             float tickDelta = renderTickCounter.getGameTimeDeltaPartialTick(true);

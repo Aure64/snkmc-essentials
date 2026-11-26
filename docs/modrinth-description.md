@@ -32,7 +32,7 @@ Tells you in chat when a newer version is available on GitHub.
 
 ## Requirements
 
-- Minecraft 26.1.2
+- Minecraft 26.2
 - Fabric Loader 0.19.5 or newer
 - Fabric API
 

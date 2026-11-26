@@ -13,7 +13,7 @@ All HUDs are draggable. Press `K` to enter edit mode, drag with the mouse, scrol
 
 ## Requirements
 
-- Minecraft 26.1.2
+- Minecraft 26.2
 - Fabric Loader ≥ 0.19.5
 - Fabric API
 - Java 25

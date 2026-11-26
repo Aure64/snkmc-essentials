@@ -1,7 +1,5 @@
 package com.snkmc.essentials;
 
-import com.snkmc.essentials.island.Island;
-import com.snkmc.essentials.island.IslandDetector;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import net.minecraft.client.Minecraft;
@@ -18,13 +16,10 @@ import net.minecraft.client.multiplayer.ServerData;
  * <ol>
  *   <li>a manual config override ({@code forceSnkmcDetection});</li>
  *   <li>the saved-server address containing "snkmc";</li>
- *   <li>the live connection hostname containing "minepiece" (covers Direct Connect);</li>
+ *   <li>the live connection hostname containing "snkmc" (covers Direct Connect);</li>
  *   <li>le pied de page (footer) / en-tête (header) du tab-list contenant
- *       "minepiece" — visible partout, y compris sur l'île perso (/is), où la
- *       boss bar de l'île disparaît (couvre Lunar Client, qui expose une IP
- *       plutôt qu'un hostname et un {@code getCurrentServerEntry()} nul);</li>
- *   <li>a MinePiece island detected from the boss bar — works regardless of how
- *       the player connected.</li>
+ *       "snkmc" (couvre Lunar Client, qui expose une IP plutôt qu'un hostname
+ *       et un {@code getCurrentServerEntry()} nul).</li>
  * </ol>
  */
 public final class ServerDetector {
@@ -190,20 +185,22 @@ public final class ServerDetector {
 
         boolean tabListMatch = tabListMatches(lastTabHeader, lastTabFooter);
 
-        boolean islandMatch = IslandDetector.getInstance().getCurrentIsland() != Island.UNKNOWN;
+        // Pas de signal « île » ici : la table Island héritée de MinePiece ne contient que
+        // des îles MinePiece. La garder activerait ce mod sur MinePiece (HUD en double
+        // pour les joueurs qui installent les deux mods).
 
         // On logue au premier moment où la réponse est significative : soit dès
         // qu'un signal réussit (état au moment du succès), soit une fois la
         // période de grâce écoulée si la détection échoue toujours (état final).
         // Logguer dès le premier tick donnerait un faux négatif systématique,
         // les signaux tab-list/boss bar n'étant pas forcément déjà arrivés.
-        boolean anyMatch = forced || addressMatch || connectionMatch || tabListMatch || islandMatch;
+        boolean anyMatch = forced || addressMatch || connectionMatch || tabListMatch;
         boolean graceElapsed = System.currentTimeMillis() - worldSeenAt >= DIAGNOSTIC_GRACE_MS;
         if (!diagnosticLogged && (anyMatch || graceElapsed)) {
             diagnosticLogged = true;
             SnkmcEssentialsClient.LOGGER.info(
-                "[ServerDetector] diagnostic — config={}, address={}, connection={}, tabList={}, island={}",
-                forced, addressMatch, connectionMatch, tabListMatch, islandMatch);
+                "[ServerDetector] diagnostic — config={}, address={}, connection={}, tabList={}",
+                forced, addressMatch, connectionMatch, tabListMatch);
         }
 
         if (forced) {
@@ -223,11 +220,6 @@ public final class ServerDetector {
 
         if (tabListMatch) {
             lastReason = "tab-list header/footer";
-            return true;
-        }
-
-        if (islandMatch) {
-            lastReason = "island detected";
             return true;
         }
 
